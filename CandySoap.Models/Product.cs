@@ -25,7 +25,7 @@ namespace CandySoap.Models
         public int CategoryId { get; set; }
         [ForeignKey("CategoryId")]
         [ValidateNever]
-        public Covertypes Category { get; set; }
+        public Category Category { get; set; }
 
         [Required]
         [Display(Name = "Cover Type")]

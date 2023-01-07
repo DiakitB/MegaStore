@@ -2,7 +2,7 @@
 
 namespace CandySoap.Models
 {
-    public class Covertypes
+    public class Category
     {
         [Key]
         public int Id { get; set; }

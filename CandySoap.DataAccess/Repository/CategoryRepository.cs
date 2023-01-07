@@ -4,7 +4,7 @@ using CandySoap.Models;
 
 namespace CandySoap.DataAccess.Repository
 {
-    public class CategoryRepository : Repository<Covertypes>, ICategoryRepository
+    public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
         private readonly ApplicationContext _context;
 
@@ -14,7 +14,7 @@ namespace CandySoap.DataAccess.Repository
         }
 
        
-        public void Update(Covertypes category)
+        public void Update(Category category)
         {
             _context.categories.Update(category);
         }

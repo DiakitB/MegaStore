@@ -2,8 +2,8 @@
 
 namespace CandySoap.DataAccess.Repository.IRepository
 {
-    public interface ICategoryRepository : IRepository<Covertypes>
+    public interface ICategoryRepository : IRepository<Category>
     {
-        void Update(Covertypes category);
+        void Update(Category category);
     }
 }

@@ -53,10 +53,10 @@ namespace CandySoap.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "products");
-        }
+        //protected override void Down(MigrationBuilder migrationBuilder)
+        //{
+        //    migrationBuilder.DropTable(
+        //        name: "products");
+        //}
     }
 }

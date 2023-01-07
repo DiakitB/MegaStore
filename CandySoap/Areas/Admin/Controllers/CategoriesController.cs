@@ -17,7 +17,7 @@ namespace CandySoap.Areas.Admin.Controllers
         public IActionResult Index()
 
         {
-            IEnumerable<Covertypes> categoryList = _context.Category.GetAll();
+            IEnumerable<Category> categoryList = _context.Category.GetAll();
             return View(categoryList);
         }
 
@@ -47,7 +47,7 @@ namespace CandySoap.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Covertypes obj)
+        public IActionResult Create(Category obj)
         {
             if (ModelState.IsValid)
             {
@@ -77,7 +77,7 @@ namespace CandySoap.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Covertypes obj)
+        public IActionResult Edit(Category obj)
         {
             if (ModelState.IsValid)
             {

@@ -12,7 +12,7 @@ namespace CandySoap.DataAccess.Repository
         public Repository(ApplicationContext context) 
         {
             _context = context;
-           // _context.products.Include(u => u.Category).Include(u => u.Covertype);
+            //_context.products.Include(u => u.Category).Include(u => u.Covertype);
             this.dbset = _context.Set<T>();
 
         }

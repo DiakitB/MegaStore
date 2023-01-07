@@ -3,6 +3,7 @@ using CandySoap.Models;
 using CandySoap.DataAccess.Repository.IRepository;
 using CandySoap.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using CandySoap.DataAccess.Repository;
 
 namespace CandySoap.Areas.Admin.Controllers
 {
@@ -68,7 +69,7 @@ namespace CandySoap.Areas.Admin.Controllers
                 return View(productVM);
             }
 
-            
+
         }
 
         // POST: Covertypes/Upsert/5
@@ -85,24 +86,25 @@ namespace CandySoap.Areas.Admin.Controllers
                 {
                     string fileName = Guid.NewGuid().ToString();
                     var uploads = Path.Combine(wwwRootPath, @"images\products");
-                    var extension = Path.GetExtension(file.Name);
-                    if(obj.Product.ImageUrl!= null)
+                    var extension = Path.GetExtension(file.FileName);
+
+                    if (obj.Product.ImageUrl != null)
                     {
                         var oldImagePath = Path.Combine(wwwRootPath, obj.Product.ImageUrl.TrimStart('\\'));
-                        if(System.IO.File.Exists(oldImagePath))
+                        if (System.IO.File.Exists(oldImagePath))
                         {
                             System.IO.File.Delete(oldImagePath);
                         }
                     }
-                    using (var fileStream = new FileStream(Path.Combine(uploads, fileName + extension), FileMode.Create))
-                    {
-                        file.CopyTo(fileStream);
-                    }
 
-                    obj.Product.ImageUrl = @"\images\product\" + fileName + extension;
-                   
+                    using (var fileStreams = new FileStream(Path.Combine(uploads, fileName + extension), FileMode.Create))
+                    {
+                        file.CopyTo(fileStreams);
+                    }
+                    obj.Product.ImageUrl = @"\images\products\" + fileName + extension;
+
                 }
-                if(obj.Product.Id == 0)
+                if (obj.Product.Id == 0)
                 {
                     _db.Product.Add(obj.Product);
                 }
@@ -110,26 +112,15 @@ namespace CandySoap.Areas.Admin.Controllers
                 {
                     _db.Product.Update(obj.Product);
                 }
-                
                 _db.Save();
-               
-            }
-            return RedirectToAction("Index");
-        }
-        // GET: Covertypes/Delete/5
-        public IActionResult Delete(int? id)
-        {
-            if (id == null || _db.Covers == null)
-            {
-                return NotFound();
-            }
-            var obj = _db.Covers.GetFirstOrDefault(x => x.Id == id);
-            if (obj == null)
-            {
-                return NotFound();
+                TempData["success"] = "Product created successfully";
+                return RedirectToAction("Index");
             }
             return View(obj);
+
         }
+        // GET: Covertypes/Delete/5
+      
 
         // POST: Covertypes/Delete/5
         [HttpPost, ActionName("Delete")]
@@ -152,13 +143,33 @@ namespace CandySoap.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var productList = _db.Product.GetAll(includeProperties:"Category");
+            var productList = _db.Product.GetAll(includeProperties: "Category");
             var objlis = Json(new { data = productList });
             return (objlis);
         }
+        public IActionResult Delete(int id)
+        {
+            var obj = _db.Product.GetFirstOrDefault(x => x.Id == id);   
+            if (obj == null)
+            {
+                return Json(new {success = false, message = "error while deleting"});
+            }
+			var oldImagePath = Path.Combine(_hostEnvironment.WebRootPath, obj.ImageUrl.TrimStart('\\'));
+			if (System.IO.File.Exists(oldImagePath))
+			{
+				System.IO.File.Delete(oldImagePath);
+			}
+
+            _db.Product.Remove(obj);
+            _db.Save();
+            return Json(new { success = true, message = "Delete successful" });
+
+			
+
+        }
         #endregion
 
+
     }
+
 }
-
-
