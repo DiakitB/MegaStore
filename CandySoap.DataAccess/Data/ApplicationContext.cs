@@ -1,9 +1,10 @@
 ﻿using CandySoap.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CandySoap.Data
 {
-    public class ApplicationContext : DbContext
+    public class ApplicationContext : IdentityDbContext
     {
         public ApplicationContext(DbContextOptions<ApplicationContext> option) : base(option) { }
         public DbSet<Category> categories { get; set; }
