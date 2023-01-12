@@ -13,6 +13,7 @@ namespace CandySoap.DataAccess.Repository
             Category = new CategoryRepository(_db);
             Covers = new CovertypesRepository(_db);
             Product= new ProductRepository(_db);
+            Company= new CompanyRepository(_db);
 
         }
         public ICategoryRepository Category { get; private set; }
@@ -21,7 +22,9 @@ namespace CandySoap.DataAccess.Repository
 
         public IProductRepository Product { get; private set; }
 
-        public void Save()
+		public ICompanyRepository Company { get; private set; }
+
+		public void Save()
         {
             _db.SaveChanges();
         }
