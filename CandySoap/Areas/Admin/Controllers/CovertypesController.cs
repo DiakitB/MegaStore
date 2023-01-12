@@ -4,7 +4,8 @@ using CandySoap.DataAccess.Repository.IRepository;
 
 namespace CandySoap.Areas.Admin.Controllers
 {
-    public class CovertypesController : Controller
+	[Area("Admin")]
+	public class CovertypesController : Controller
     {
         private readonly IUnitOfWork _db;
 

@@ -11,5 +11,6 @@ namespace CandySoap.Data
        public DbSet<Covertype> covertypes { get; set; }
         public DbSet<Product> products { get; set; }  
         public DbSet<ApplicationUser> applicationUsers { get; set; }
-    }
+		public DbSet<Company> company { get; set; }
+	}
 }

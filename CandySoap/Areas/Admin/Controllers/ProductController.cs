@@ -7,7 +7,8 @@ using CandySoap.DataAccess.Repository;
 
 namespace CandySoap.Areas.Admin.Controllers
 {
-    public class ProductController : Controller
+	[Area("Admin")]
+	public class ProductController : Controller
     {
         private readonly IUnitOfWork _db;
         private readonly IWebHostEnvironment _hostEnvironment;

@@ -4,7 +4,8 @@ using CandySoap.DataAccess.Repository.IRepository;
 
 namespace CandySoap.Areas.Admin.Controllers
 {
-    public class CategoriesController : Controller
+	[Area("Admin")]
+	public class CategoriesController : Controller
     {
         private readonly IUnitOfWork _context;
 
