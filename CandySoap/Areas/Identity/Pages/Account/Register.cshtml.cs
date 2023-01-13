@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
+using CandySoap.DataAccess.Repository.IRepository;
 using CandySoap.Models;
 using CandySoap.Utility;
 using Microsoft.AspNetCore.Authentication;
@@ -34,14 +35,16 @@ namespace CandySoap.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
 		private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUnitOfWork _db;
 
-		public RegisterModel(
+        public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-			RoleManager<IdentityRole> roleManager
+            RoleManager<IdentityRole> roleManager,
+            IUnitOfWork db
             )
 
         {
@@ -52,7 +55,7 @@ namespace CandySoap.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _roleManager = roleManager;
-            
+            _db= db;
 
         }
 
@@ -116,11 +119,13 @@ namespace CandySoap.Areas.Identity.Pages.Account
 			public string? PostalCode { get; set; }
             public string? PhoneNumber { get; set; }
             public string? Role { get; set; }   
+            public int? CompanyId { get; set; }
             [ValidateNever]
-           public IEnumerable<SelectListItem> RoleList { get; set; }  
+           public IEnumerable<SelectListItem> RoleList { get; set; }
+            public IEnumerable<SelectListItem> CompanyList { get; set; }
 
 
-		}
+        }
 
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -136,10 +141,15 @@ namespace CandySoap.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             Input = new InputModel()
             {
-                RoleList = _roleManager.Roles.Select(x => x.Name).Select(i=>new SelectListItem
+                RoleList = _roleManager.Roles.Select(x => x.Name).Select(i => new SelectListItem
                 {
                     Text = i,
                     Value = i
+                }),
+                CompanyList = _db.Company.GetAll().Select(x => new SelectListItem
+                {
+                    Text = x.Name,
+                    Value = x.Id.ToString()
                 })
             };
         }
