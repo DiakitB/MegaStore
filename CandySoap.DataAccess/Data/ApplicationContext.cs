@@ -13,5 +13,7 @@ namespace CandySoap.Data
         public DbSet<ApplicationUser> applicationUsers { get; set; }
 		public DbSet<Company> company { get; set; }
         public DbSet<ShoppingCart> shoppingCarts { get;set; }
+        public DbSet<OrderHeader> orderHeaders { get; set; }
+        public DbSet<OrderDetail> orderDetail { get; set; }
 	}
 }
