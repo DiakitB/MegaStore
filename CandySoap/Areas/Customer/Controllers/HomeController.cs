@@ -1,8 +1,10 @@
 ﻿using CandySoap.DataAccess.Repository.IRepository;
 using CandySoap.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Protocol.Core.Types;
 using System.Diagnostics;
-
+using System.Security.Claims;
 namespace CandySoap.Areas.Customer.Controllers
 {
 	[Area("Customer")]
@@ -24,20 +26,35 @@ namespace CandySoap.Areas.Customer.Controllers
             
             return View(productList);
         }
-		public IActionResult Details(int? id)
+		public IActionResult Details(int productId)
 
 		{
+            
             ShoppingCart cartObj = new()
             {
                 Count = 1,
-                Product = _db.Product.GetFirstOrDefault(x => x.Id == id),
+               ProductId= productId,
+                Product = _db.Product.GetFirstOrDefault(x => x.Id == productId),
             };
 			
 
 			return View(cartObj);
 		}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public IActionResult Details(ShoppingCart shoppingCart)
 
-		public IActionResult Privacy()
+        {
+            var claimsIdentity =(ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            shoppingCart.ApplicationUserId = claim.Value;
+           _db.ShoppingCart.Add(shoppingCart);
+            _db.Save();
+            return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Privacy()
         {
             return View();
         }
