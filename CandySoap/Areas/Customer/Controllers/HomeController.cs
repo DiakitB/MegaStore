@@ -49,7 +49,16 @@ namespace CandySoap.Areas.Customer.Controllers
             var claimsIdentity =(ClaimsIdentity)User.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
             shoppingCart.ApplicationUserId = claim.Value;
-           _db.ShoppingCart.Add(shoppingCart);
+            ShoppingCart cartFromDb = _db.ShoppingCart.GetFirstOrDefault(x => x.ApplicationUserId== claim.Value && x.ProductId==shoppingCart.ProductId);
+            if (cartFromDb == null)
+            {
+				_db.ShoppingCart.Add(shoppingCart);
+			}
+            else
+            {
+                _db.ShoppingCart.IncrementCount(cartFromDb, shoppingCart.Count);
+            }
+          
             _db.Save();
             return RedirectToAction(nameof(Index));
         }
