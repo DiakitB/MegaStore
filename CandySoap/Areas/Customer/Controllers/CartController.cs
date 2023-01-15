@@ -1,5 +1,7 @@
 ﻿using CandySoap.DataAccess.Repository.IRepository;
+using CandySoap.Models;
 using CandySoap.Models.ViewModels;
+using CandySoap.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,6 +13,7 @@ namespace CandySoap.Areas.Customer.Controllers
 	public class CartController : Controller
 	{
 		private readonly IUnitOfWork _db;
+		[BindProperty]
 		public ShoppingCartVM ShoppingCartVM { get; set; }
 		public int Ordertotal { get; set; }
 		public CartController(IUnitOfWork db)
@@ -58,6 +61,43 @@ namespace CandySoap.Areas.Customer.Controllers
 			return View(ShoppingCartVM);
 			
 		}
+		[HttpPost]
+		[ActionName("Summary")]
+		public IActionResult SummaryPost()
+		{
+			var claimsIdentity = (ClaimsIdentity)User.Identity;
+			var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+			ShoppingCartVM.ListCart = _db.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: "Product");
+			ShoppingCartVM.OrderHeader.PaymentStatus = DS.PaymentStatusPending;
+			ShoppingCartVM.OrderHeader.OrderStatus= DS.StatusPending;
+			ShoppingCartVM.OrderHeader.OrderDate = System.DateTime.Now;
+			ShoppingCartVM.OrderHeader.ApplicationUserId = claim.Value;
+
+			foreach (var cart in ShoppingCartVM.ListCart)
+			{
+				cart.Price = GetPriceBasedonQuantity(cart.Count, cart.Product.Price, cart.Product.Price50);
+				ShoppingCartVM.OrderHeader.Ordertotal += (cart.Price * cart.Count);
+			}
+			_db.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+			_db.Save();
+			foreach (var cart in ShoppingCartVM.ListCart)
+			{
+				OrderDetail orderDetail = new()
+				{
+					ProductId = cart.ProductId,
+					OrderId = ShoppingCartVM.OrderHeader.Id,
+					Price = cart.Price,
+					Count = cart.Count
+				};
+				_db.OrderDetail.Add(orderDetail);
+				_db.Save();
+			}
+			_db.ShoppingCart.RemoveRange(ShoppingCartVM.ListCart);
+			_db.Save();
+			return RedirectToAction("Index", "Home");
+
+		}
+
 
 
 		public IActionResult Plus(int cartId)
