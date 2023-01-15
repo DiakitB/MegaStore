@@ -1,12 +1,12 @@
 ﻿using CandySoap.DataAccess.Repository.IRepository;
-using CandySoap.Models;
+using CandySoap.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace CandySoap.Areas.Customer.Controllers
 {
-	[Area("Customer")]
+    [Area("Customer")]
 	[Authorize]
 	public class CartController : Controller
 	{
@@ -24,30 +24,39 @@ namespace CandySoap.Areas.Customer.Controllers
 			var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
 			ShoppingCartVM = new ShoppingCartVM()
 			{
-				ListCart = _db.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: "Product")
+				ListCart = _db.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: "Product"),
+				OrderHeader = new()
 			};
 			foreach(var cart in ShoppingCartVM.ListCart)
 			{
 				cart.Price = GetPriceBasedonQuantity(cart.Count, cart.Product.Price, cart.Product.Price50);
-				ShoppingCartVM.CartTotal += (cart.Price * cart.Count);
+				ShoppingCartVM.OrderHeader.Ordertotal += (cart.Price * cart.Count);
 			}
 			return View(ShoppingCartVM);
 		}
 		public IActionResult Summary()
 		{
-			//var claimsIdentity = (ClaimsIdentity)User.Identity;
-			//var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-			//ShoppingCartVM = new ShoppingCartVM()
-			//{
-			//	ListCart = _db.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: "Product")
-			//};
-			//foreach (var cart in ShoppingCartVM.ListCart)
-			//{
-			//	cart.Price = GetPriceBasedonQuantity(cart.Count, cart.Product.Price, cart.Product.Price50);
-			//	ShoppingCartVM.CartTotal += (cart.Price * cart.Count);
-			//}
-			//return View(ShoppingCartVM);
-			return View();
+			var claimsIdentity = (ClaimsIdentity)User.Identity;
+			var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+			ShoppingCartVM = new ShoppingCartVM()
+			{
+				ListCart = _db.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: "Product"),
+				OrderHeader = new()
+			};
+			ShoppingCartVM.OrderHeader.ApplicationUser = _db.ApplicationUser.GetFirstOrDefault(u => u.Id == claim.Value);
+			ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeader.ApplicationUser.Name;
+			ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
+			ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
+			ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeader.ApplicationUser.City;
+			ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeader.ApplicationUser.State;
+			ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
+			foreach (var cart in ShoppingCartVM.ListCart)
+			{
+				cart.Price = GetPriceBasedonQuantity(cart.Count, cart.Product.Price, cart.Product.Price50);
+				ShoppingCartVM.OrderHeader.Ordertotal += (cart.Price * cart.Count);
+			}
+			return View(ShoppingCartVM);
+			
 		}
 
 
