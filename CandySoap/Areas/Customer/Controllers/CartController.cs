@@ -4,6 +4,7 @@ using CandySoap.Models.ViewModels;
 using CandySoap.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe.Checkout;
 using System.Security.Claims;
 
 namespace CandySoap.Areas.Customer.Controllers
@@ -92,12 +93,68 @@ namespace CandySoap.Areas.Customer.Controllers
 				_db.OrderDetail.Add(orderDetail);
 				_db.Save();
 			}
-			_db.ShoppingCart.RemoveRange(ShoppingCartVM.ListCart);
+			//stripeSetting
+			var domain = "https://localhost:7139/";
+			var options = new SessionCreateOptions
+			{
+				LineItems = new List<SessionLineItemOptions>()
+				,
+			Mode = "payment",
+				SuccessUrl = domain+$"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+				CancelUrl = domain+"customer/cart/index",
+			};
+			foreach(var item in ShoppingCartVM.ListCart) 
+			{
+
+				var sessionLineItem = new SessionLineItemOptions
+				{
+					PriceData = new SessionLineItemPriceDataOptions
+					{
+						UnitAmount = (long)(item.Price * 100),
+						Currency = "usd",
+						ProductData = new SessionLineItemPriceDataProductDataOptions
+						{
+							Name = item.Product.Name,
+						},
+					},
+					Quantity = item.Count,
+				};
+				options.LineItems.Add(sessionLineItem);
+		
+			
+			}
+
+			var service = new SessionService();
+			Session session = service.Create(options);
+			_db.OrderHeader.UpdateStripePaymentID(ShoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
 			_db.Save();
-			return RedirectToAction("Index", "Home");
+			Response.Headers.Add("Location", session.Url);
+			return new StatusCodeResult(303);
+
+
+
+			//_db.ShoppingCart.RemoveRange(ShoppingCartVM.ListCart);
+			//_db.Save();
+			//return RedirectToAction("Index", "Home");
 
 		}
+		public IActionResult OrderConfirmation(int id)
+		{
+			OrderHeader orderHeader = _db.OrderHeader.GetFirstOrDefault(u=>u.Id == id);
+			var service = new SessionService();
+			Session session = service.Get(orderHeader.SessionId);
+			//check the stripe status
+			if(session.PaymentStatus.ToLower() == "paid")
+			{
+				_db.OrderHeader.UpdateStatus(id, DS.StatusApproved, DS.PaymentStatusApproved);
+				_db.Save();
+			}
+			List<ShoppingCart> shoppingCarts = _db.ShoppingCart.GetAll(u=>u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
+			_db.ShoppingCart.RemoveRange(shoppingCarts);
+			_db.Save();
+			return View(id);
 
+		}
 
 
 		public IActionResult Plus(int cartId)

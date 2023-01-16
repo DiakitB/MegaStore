@@ -1,4 +1,6 @@
 ﻿@model CandySoap.Models.ViewModels.ShoppingCartVM
+@using Microsoft.Extensions.Options
+@inject IOptions<CandySoap.Utility.StripeSetting> Stripe
 <form method="post">
 	<br />
 	<div class="container">
